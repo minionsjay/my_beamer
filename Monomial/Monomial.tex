@@ -1,0 +1,295 @@
+\documentclass[notheorems, aspectratio=169]{beamer}
+\def\bd#1{\boldsymbol{#1}}
+\usepackage{latexsym}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{color,xcolor}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode} 
+\usepackage{amsthm}
+\usepackage{lmodern} % 解决 font warning
+% \usepackage[UTF8]{ctex}
+\usepackage{animate} % insert gif
+
+\usepackage{lipsum} % To generate test text 
+\usepackage{ulem} % 下划线，波浪线
+
+\usepackage{listings}
+
+
+\title[Massive Superpoly Recovery with Nested Monomial Predictions]
+{Massive Superpoly Recovery with Nested Monomial Predictions}
+% \subtitle{The subtitle}
+\author{Kai Hu, Siwei Sun, Yosuke Todo, Meiqin Wang,  Qingju Wang}
+\institute[HUST]{ASIACRYPT 2021}
+
+% -------------------------------------------------------------
+\usetheme{Boadilla}
+\usefonttheme[onlymath]{serif}
+\begin{document}
+
+%% title frame
+    \begin{frame}
+        \titlepage
+    \end{frame}
+
+
+
+%第一张
+\section{ Introduction}
+%\subsection{}
+\begin{frame}
+    \frametitle{Introduction}
+    %At EUROCRYPT 2009 Dinur and Shamir   proposed  cube attack against symmetric-key primitives with a secret key and a public input.   
+    \begin{itemize}
+        \item Stream and Block cipher
+        \item Degree Evaluations, Cube Attacks
+        \item Division Properties,Integral Attack
+    \end{itemize}
+    \begin{block}{Contribution  }
+        \begin{itemize}
+         \item Propose a new technique called monomial prediction,can be regarded as a new language for describing the division properties
+         \item Apply this technique to Degree Evaluations and Cube Attacks
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+%第二张
+\section{ Preliminaries}
+\begin{frame}
+    \frametitle{Preliminaries}
+
+    \begin{block}{Boolean Function }
+        Let $f: \mathbb{F}^n_2 \rightarrow \mathbb{F}_2$ be a Boolean function whose algebraic normal form (ANF) is 
+        $$f(\boldsymbol{x})=f(x_0,x_1,...,x_{n-1})=\bigoplus_{\boldsymbol{u}\in \mathbb{F}_2^n}a_{\boldsymbol{u}} \prod^{n-1}_{i=0}x_i^{u_i}$$
+        where $a_\boldsymbol{u}\in \mathbb{F}_2$ and
+        $$
+        \boldsymbol{x}^{\boldsymbol{u}}=\pi_{\boldsymbol{u}}(\boldsymbol{x})=\prod^{n-1}_{i=0}x_i^{u_i}= \left\{\begin{matrix}x_i,if \quad u_i=1,\\1,if \quad u_i=0, \end{matrix}\right.    
+        $$
+
+    \end{block}
+    \begin{block}{Example 1}
+        Let $f(x_0,x_1) =x_0x_1 \oplus x_0 \oplus 1$ ,then we have  
+         $$x_0x_1 \rightarrow f ,x_0 \rightarrow f,1 \rightarrow f ,x_1 \not \rightarrow f$$ 
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    %\frametitle{An Example}
+    \begin{block}{Vectorial Boolean Function }
+        $\boldsymbol{f}:\mathbb{F}^n_2 \rightarrow \mathbb{F}^m_2 $  be a vectorial Boolean function with $\boldsymbol{y} =(y_0,y_1,...,y_{m-1})=\boldsymbol{f}(\boldsymbol{x})=(f_0(\boldsymbol{x}),...,f_{n-1}(\boldsymbol{x}))$ .
+        For $\boldsymbol{x}\in \mathbb{F}^n_2 $,we use $\boldsymbol{y}^\boldsymbol{v}$ to denote the product of some coordinates of $\boldsymbol{y}$:
+        $$ \boldsymbol{y}^v =\prod^{m-1}_{i=0}y_i^{v_i} =\prod ^{m-1}_{i=0}(f_i(\boldsymbol{x}))^{v_i}$$
+    \end{block}   
+\end{frame}
+
+\section{Technology}
+\begin{frame}
+    \frametitle{ Monomial Prediction}
+    Let $\boldsymbol{f}:\mathbb{F}^{n_0}_2 \rightarrow \mathbb{F}^{n_r}_2$ be a composite vectorial Boolean function of a sequence of
+    r smaller function $\boldsymbol{f}^i:\mathbb{F}^{n_i}_2 \rightarrow \mathbb{F}^{n_{i+1}}_2,0 \le i \le r-1$ as
+    \begin{align}
+        \boldsymbol{f}=\boldsymbol{f}^{(r-1)} \circ \boldsymbol{f}^{(r-2)} \circ \dots \circ \boldsymbol{f}^{(0)}
+    \end{align}
+    \begin{block}{Definition 1 (Monomial Trail)}
+        Let $\bd{x}^{(i+1)}=\bd{f}^{(i)}(\bd{x}^{(i)})$ for $0\le i<r$.We call a sequence of monomails 
+        $(\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) , \pi_{\boldsymbol{u}^{(1)}}(\boldsymbol{x}^{(1)}) , \dots ,\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)}))$
+        an r-round monomial trail connecting $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})$ and
+        $\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$ with respect to the composite function
+        $\bd{f}=\bd{f}^{(r-1)}\circ \bd{f}^{(r-2)}\circ \dots \circ \bd{f}^{(0)}$ if
+        $$
+        \pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \rightarrow \pi_{\boldsymbol{u}^{(1)}}(\boldsymbol{x}^{(1)}) \rightarrow \dots \rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})
+        $$
+        \\
+        If there is at least one monomial trail connecting $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})$
+        and $\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,we write 
+        $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$.
+        Otherwise,$\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\not \leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+    \end{block}
+\end{frame}
+
+
+\begin{frame}
+    \begin{block}{Example 2}
+        Let $\boldsymbol{z}=(z_0,z_1)=\boldsymbol{f}^{(0)}(y_0,y_1)=(y_0y_1,y_0 \oplus y_1),\boldsymbol{y}=(y_0,y_1)=
+        \boldsymbol{f}^{(0)}(x_0,x_1,x_2)=(x_0\oplus x_1 \oplus x_2 ,x_0x_1 \oplus x_0 \oplus x_2)$ and 
+        $ \boldsymbol{f}=\boldsymbol{f}^{(0)} \cric \boldsymbol{f}^{(1)}$.Consider $(x_0,x_1,x_2)^{(1,0,0)}=x_0$
+        $$
+            (y_0,y_1)^{(0,0)}=1,(y_0,y_1)^{(1,0)}=y_0=\underline{x_0}\oplus x_1\oplus x_2,(y_0,y_1)^{(0,1)}=y_1=x_0x_1\oplus 
+             \underline{x_0} \oplus x_2,
+        $$
+        $$
+            (y_0,y_1)^{(1,1)}=y_0y_1=x_0x_1x_2 \oplus x_0x_1\oplus x_1x_2 \oplus \underline{x_0} \oplus x_2.
+        $$
+        \\Then $$ x_0 \rightarrow y_0,x_0\rightarrow y_1,x_0 \rightarrow y_0y_1$$
+        \\Similarly $$ (z_0,z_1)^{(0,0)}=1,(z_0,z_1)^{(1,0)}=z_0=y_0y_1,(z_0,z_1)^{(0,1)}=z_1=y_0\oplus y_1,
+         (z_0,z_1)^{(1,1)}=z_0z_1=0$$
+
+         Then connecting $ x_0$ and monomials of z:$$ x_0 \rightarrow y_0 \rightarrow z_1,x_0 \rightarrow y_1 \rightarrow z_1,x_0 \rightarrow y_0y_1 \rightarrow z_0$$
+
+    \end{block}
+\end{frame}
+
+
+\begin{frame}
+    
+    \begin{block}{Lemma 1}
+        $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$.
+        if $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,and thus
+        $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\not \leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+        implies $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\not \rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+    \end{block}
+    Considering Example 2, although $x_0  \leadsto z_1$,we have $x_0 \not \rightarrow z_1$ since 
+    $$
+    z_1=y_0 \oplus y_1 =\underline{x_0} \oplus x_1\oplus x_2\oplus x_0x_1 \oplus \underline{x_0} \oplus x_2=x_0x_1\oplus x_1.
+    $$
+    \begin{block}{Definition 2 (Monomial Hull)}
+        For $\bd{f}$ with a  specific composition sequence,
+        the monomial hull of $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})$ and $\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,
+        denoted by $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \bowtie \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,is the set of
+        all monomial trails connecting them. The number of trails in the
+        monomial hull is called the \textbf{size} of the hull and is denoted by
+        $|\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \bowtie \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})|$.
+
+
+    \end{block}
+\end{frame}
+
+
+\begin{frame}
+    \begin{block}{Example 3}
+        Consider Example 2, the monomial hull of $x_0$ and $z_1$ is the set 
+        $$
+        x_0 \bowtie z_1=\{x_0 \rightarrow y_0 \rightarrow z_1,x_0 \rightarrow y_1 \rightarrow z_1\}
+        $$
+        Thus  the size of $x_0 \bowtie z_1$ is 2.   Furthermore, since $x_0 \not \leadsto z_0z_1$,
+        $x_0 \bowtie z_0z_1 =\emptyset $ and $|x_0 \bowtie z_0z_1|=0$.
+    \end{block}
+    \begin{block}{Theorem 1}
+        Let $\boldsymbol{f}=\boldsymbol{f}^{(r-1)} \circ \boldsymbol{f}^{(r-2)} \circ \dots \circ \boldsymbol{f}^{(0)}$ defined as
+        above. $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+        if and only if 
+        $$
+        |\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\bowtie  \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)}) \equiv 1 \pmod{2}.
+        $$
+    \end{block}
+\end{frame}
+
+%传播规则
+\begin{frame}{Propation rules}
+    \begin{block}{Rule 1(Copy)}
+        Let $\bd{x}=(x_0,x_1,...,x_{n-1})$ and $\bd{y}=(x_0,x_0.x_1,...,x_{n-1})$ be the input and ouput vector of 
+    a Copy function.Consider a monomial of $\bd{x}$ as $\bd{x}^{\bd{u}}$,the monomial $\bd{y}^{\bd{v}}$ of $\bd{y}$ ,$\bd{x}^{\bd{u}} \rightarrow \bd{y}^{\bd{v}}$ 
+        \begin{align}
+            \bd{v}=
+        \begin{cases}
+            (0,u_1,...,u_{n-1}) \Rightarrow _{copy}(0,0,u_1,...u_{n-1}),\\
+            (1,u_1,...,u_{n-1}) \Rightarrow _{copy}(1,0,u_1,...u_{n-1})\;or\;(0,1,u_1,...u_{n-1})\;or\;(1,1,u_1,...u_{n-1})
+        \end{cases}\notag 
+        \end{align}
+\end{block}
+%\end{frame}
+
+%\begin{frame}
+    
+\begin{block}{Rule 2(Xor)}
+    Let $\bd{x}=(x_0,x_1,...,x_{n-1})$ and $\bd{y}=(x_0\oplus x_1,...,x_{n-1})$ be the input and ouput vector of 
+    a XOR function.Consider a monomial of $\bd{x}$ as $\bd{x}^{\bd{u}}$,the monomial $\bd{y}^{\bd{v}}$ of $\bd{y}$ ,$\bd{x}^{\bd{u}} \rightarrow \bd{y}^{\bd{v}}$ 
+    $$
+        \bd{v}=(u_0+u_1,...,u_{n-1}),(u_0,u-1)\in \{(0,0),(0,1),(1,0)\}
+    $$
+\end{block}
+\end{frame}
+\begin{frame}
+\begin{block}{Rule 3(And)}
+    Let $\bd{x}=(x_0,x_1,...,x_{n-1})$ and $\bd{y}=(x_0\land x_1,...,x_{n-1})$ be the input and ouput vector of 
+    a XOR function.Consider a monomial of $\bd{x}$ as $\bd{x}^{\bd{u}}$,the monomial $\bd{y}^{\bd{v}}$ of $\bd{y}$ ,$\bd{x}^{\bd{u}} \rightarrow \bd{y}^{\bd{v}}$ 
+    $$
+        \bd{v}=(u_0,u_2,...,u_{n-1}),(u_0,u-1)\in \{(0,0),(1,1)\}
+    $$
+\end{block}
+
+\end{frame}
+\section{ Applications}
+\begin{frame}
+    \frametitle{Degree Evaluation}
+    The degree of a Boolean function $f$ is defined as follows,
+    $$
+        deg(f)={max}\limits_{\pi_{\bd{u}}(\bd{x}^{(0)})\rightarrow f}   wt(\bd{u}^{(0)})    
+    $$
+    \begin{enumerate}
+        \item Find a monomial $\pi_{\bd{u}}(\bd{x}^{(0)}) \leadsto f$ with $wt(\bd{u})=d$ and prove 
+        $\pi_{\hat{\bd{u}}}(\bd{x}^{(0)}) \not \rightarrow f$ for any $wt(\hat{\bd{u}})>d$
+        \item Compute $|\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \bowtie f|$ ,if the value is odd,
+        then the $deg(f)=d$,else,repeat the process until we find a desired monomial of $f$.
+    \end{enumerate}
+    MILP-based approach to search for the monomials of $f$.In this MILP model, the objective function of the
+    model is to maximize $wt(\bd{u}^{(0)})$.    
+\end{frame}
+\begin{frame}
+    \frametitle{Cube Attack}
+    For a cipher with a secret key $\bd{k}=(k_0,...,k_{m-1}) \in  \mathbb{F}^m_2$ and a public input $\bd{v}=(v_0,...v_{n-1}) \in \mathbb{F}^n_2$, a Boolean function $f(\bd{v},\bd{k})$
+        $$
+        f(\boldsymbol{v},\boldsymbol{k})=p(\boldsymbol{v}[\hat{\boldsymbol{u}}],\boldsymbol{k}) \cdot \boldsymbol{v}^{\boldsymbol{u}}
+        +q(\boldsymbol{v},\boldsymbol{k})
+        $$
+        Let $\mathbb{C}_u ={\boldsymbol{v} \in \mathbb{F}^n_2:\boldsymbol{v}} \preceq \boldsymbol{u},wt(\bd{u})\le n$, 
+        $$
+        \bigoplus_{\boldsymbol{v} \in \mathbb{C}_u}f(\boldsymbol{v},\boldsymbol{k})=\bigoplus_{\boldsymbol{v}\in \mathbb{C}_u}(p \cdot \boldsymbol{v}^{\boldsymbol{u}}+q(\boldsymbol{v},\boldsymbol{k}))=p
+        $$
+        
+        \\It is easy to check that the superpoly of $\mathbb{C}_u$ is just the coeffcient of $\boldsymbol{x}^{\boldsymbol{u}}$ in the
+        parameterized Boolean function $f(\boldsymbol{v},\bd{k}) $
+        $$
+        p(\boldsymbol{v}[\hat{\boldsymbol{u}}],\boldsymbol{k})=Coe(f(\bd{v},\bd{k}),\bd{v}^{\bd{u}}).
+        $$
+
+\end{frame}
+\begin{frame}
+    \begin{block}{Example}
+        We suppose a stream cipher has input $\bd{v}=(v_0,v_1,v_2,v_3) \in \mathbb{F}^4_2$ and $\bd{k}=(k_0,k_1,k_2) \in \mathbb{F}^3_2$, 
+        $$
+            f(\bd{v},\bd{k})=v_0v_1v_2(v_3k_0+k_2)+v_0v_2(k_1k_2)+v_0+k_0
+        $$
+        then we chose $\mathbb{C}_u=(v_0,v_1,v_2)$,and calculate 
+        $$
+        \bigoplus_{\boldsymbol{v} \in \mathbb{C}_u}f(\boldsymbol{v},\boldsymbol{k})=\bigoplus_{\boldsymbol{v}\in \mathbb{C}_u}(p \cdot \boldsymbol{v}^{\boldsymbol{u}}+q(\boldsymbol{v},\boldsymbol{k}))
+        =(v_3k_0+k_2)
+        $$
+        or we chose $\mathbb{C}_u=(v_0,v_2)$,and the superpoly will be 
+        $$
+            v_1(v_3k_0+k_2)+k_1k_2
+        $$
+
+
+
+    \end{block}
+
+
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Key-Recovery Attacks with Superpolies}
+    \begin{block}{Offline}
+        We have recovered the exact ANF of superpoly $p(\bd{f})$ for the cube term $\bd{x}^{\bd{u}}$ (the 
+        corresponding cube is denoted by $\mathbb{C}_{\bd{u}}$).
+    \end{block}
+    \begin{block}{Online}
+        In the online phase, we first call the cipher oracle to encrypt all elements in the cube and get the value of
+        the superpoly with time complexity $2^{wt(\bd{u})}$.\\
+        Next,we try to obtain some information of the secret key from the equation:
+        $$
+        p(\bd{k})=\bigoplus _{\bd{x}\in \mathbb{C}_{\bd{u}}} f_{\bd{k}}(\bd{x}).
+        $$
+        
+    \end{block}
+\end{frame}
+
+\begin{frame}{}
+    \centering \Huge
+    \emph{Thank You}
+  \end{frame}
+\end{document}
