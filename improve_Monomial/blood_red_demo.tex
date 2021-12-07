@@ -1,0 +1,541 @@
+%!TeX encoding = UTF-8
+%!TeX program = xelatex
+\documentclass[notheorems,aspectratio=169]{beamer}
+% aspectratio: 1610, 149, 54, 43(default), 32
+\def\bd#1{\boldsymbol{#1}}
+\usepackage{latexsym}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{color,xcolor}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode} 
+\usepackage{amsthm}
+\usepackage{lmodern} % 解决 font warning
+% \usepackage[UTF8]{ctex}
+\usepackage{animate} % insert gif
+
+\usepackage{lipsum} % To generate test text 
+\usepackage{ulem} % 下划线，波浪线
+
+\usepackage{listings} % display code on slides; don't forget [fragile] option after \begin{frame}
+
+%\usepackage[ruled]{algorithm2e}
+% tikx
+\usepackage{framed}
+\usepackage{tikz}
+\usepackage{pgf}
+\usetikzlibrary{calc,trees,positioning,arrows,chains,shapes.geometric,%
+    decorations.pathreplacing,decorations.pathmorphing,shapes,%
+    matrix,shapes.symbols}
+\pgfmathsetseed{1} % To have predictable results
+% Define a background layer, in which the parchment shape is drawn
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+
+% define styles for the normal border and the torn border
+\tikzset{
+  normal border/.style={orange!30!black!10, decorate, 
+     decoration={random steps, segment length=2.5cm, amplitude=.7mm}},
+  torn border/.style={orange!30!black!5, decorate, 
+     decoration={random steps, segment length=.5cm, amplitude=1.7mm}}}
+
+% Macro to draw the shape behind the text, when it fits completly in the
+% page
+\def\parchmentframe#1{
+\tikz{
+  \node[inner sep=2em] (A) {#1};  % Draw the text of the node
+  \begin{pgfonlayer}{background}  % Draw the shape behind
+  \fill[normal border] 
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \end{pgfonlayer}}}
+
+% Macro to draw the shape, when the text will continue in next page
+\def\parchmentframetop#1{
+\tikz{
+  \node[inner sep=2em] (A) {#1};    % Draw the text of the node
+  \begin{pgfonlayer}{background}    
+  \fill[normal border]              % Draw the ``complete shape'' behind
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \fill[torn border]                % Add the torn lower border
+        ($(A.south east)-(0,.2)$) -- ($(A.south west)-(0,.2)$) -- 
+        ($(A.south west)+(0,.2)$) -- ($(A.south east)+(0,.2)$) -- cycle;
+  \end{pgfonlayer}}}
+
+% Macro to draw the shape, when the text continues from previous page
+\def\parchmentframebottom#1{
+\tikz{
+  \node[inner sep=2em] (A) {#1};   % Draw the text of the node
+  \begin{pgfonlayer}{background}   
+  \fill[normal border]             % Draw the ``complete shape'' behind
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \fill[torn border]               % Add the torn upper border
+        ($(A.north east)-(0,.2)$) -- ($(A.north west)-(0,.2)$) -- 
+        ($(A.north west)+(0,.2)$) -- ($(A.north east)+(0,.2)$) -- cycle;
+  \end{pgfonlayer}}}
+
+% Macro to draw the shape, when both the text continues from previous page
+% and it will continue in next page
+\def\parchmentframemiddle#1{
+\tikz{
+  \node[inner sep=2em] (A) {#1};   % Draw the text of the node
+  \begin{pgfonlayer}{background}   
+  \fill[normal border]             % Draw the ``complete shape'' behind
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \fill[torn border]               % Add the torn lower border
+        ($(A.south east)-(0,.2)$) -- ($(A.south west)-(0,.2)$) -- 
+        ($(A.south west)+(0,.2)$) -- ($(A.south east)+(0,.2)$) -- cycle;
+  \fill[torn border]               % Add the torn upper border
+        ($(A.north east)-(0,.2)$) -- ($(A.north west)-(0,.2)$) -- 
+        ($(A.north west)+(0,.2)$) -- ($(A.north east)+(0,.2)$) -- cycle;
+  \end{pgfonlayer}}}
+
+% Define the environment which puts the frame
+% In this case, the environment also accepts an argument with an optional
+% title (which defaults to ``Example'', which is typeset in a box overlaid
+% on the top border
+\newenvironment{parchment}[1][Example]{%
+  \def\FrameCommand{\parchmentframe}%
+  \def\FirstFrameCommand{\parchmentframetop}%
+  \def\LastFrameCommand{\parchmentframebottom}%
+  \def\MidFrameCommand{\parchmentframemiddle}%
+  \vskip\baselineskip
+  \MakeFramed {\FrameRestore}
+  \noindent\tikz\node[inner sep=1ex, draw=black!20,fill=white, 
+          anchor=west, overlay] at (0em, 2em) {\sffamily#1};\par}%
+{\endMakeFramed}
+
+% ----------------------------------------------
+
+\mode<presentation>{
+    \usetheme{CambridgeUS}
+    % Boadilla CambridgeUS
+    % default Antibes Berlin Copenhagen
+    % Madrid Montpelier Ilmenau Malmoe
+    % Berkeley Singapore Warsaw
+    \usecolortheme{beaver}
+    % beetle, beaver, orchid, whale, dolphin
+    \useoutertheme{infolines}
+    % infolines miniframes shadow sidebar smoothbars smoothtree split tree
+    \useinnertheme{circles}
+    % circles, rectanges, rounded, inmargin
+}
+% 设置 block 颜色
+\setbeamercolor{block title}{bg=red!30,fg=white}
+
+\newcommand{\reditem}[1]{\setbeamercolor{item}{fg=red}\item #1}
+
+% 缩放公式大小
+\newcommand*{\Scale}[2][4]{\scalebox{#1}{\ensuremath{#2}}}
+
+% 解决 font warning
+\renewcommand\textbullet{\ensuremath{\bullet}}
+
+% ---------------------------------------------------------------------
+% flow chart
+\tikzset{
+    >=stealth',
+    punktchain/.style={
+        rectangle, 
+        rounded corners, 
+        % fill=black!10,
+        draw=white, very thick,
+        text width=6em,
+        minimum height=2em, 
+        text centered, 
+        on chain
+    },
+    largepunktchain/.style={
+        rectangle,
+        rounded corners,
+        draw=white, very thick,
+        text width=10em,
+        minimum height=2em,
+        on chain
+    },
+    line/.style={draw, thick, <-},
+    element/.style={
+        tape,
+        top color=white,
+        bottom color=blue!50!black!60!,
+        minimum width=6em,
+        draw=blue!40!black!90, very thick,
+        text width=6em, 
+        minimum height=2em, 
+        text centered, 
+        on chain
+    },
+    every join/.style={->, thick,shorten >=1pt},
+    decoration={brace},
+    tuborg/.style={decorate},
+    tubnode/.style={midway, right=2pt},
+    font={\fontsize{10pt}{12}\selectfont},
+}
+% ---------------------------------------------------------------------
+
+% code setting
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{red},
+    breaklines=true,
+    xleftmargin=2em,
+    numbers=left,
+    numberstyle=\color[RGB]{222,155,81},
+    frame=leftline,
+    tabsize=4,
+    breakatwhitespace=false,
+    showspaces=false,               
+    showstringspaces=false,
+    showtabs=false,
+    morekeywords={Str, Num, List},
+}
+
+% ---------------------------------------------------------------------
+
+%% preamble
+\title[Massive Superpoly Recovery with Nested Monomial Predictions]{Massive Superpoly Recovery with Nested Monomial Predictions}
+% \subtitle{The subtitle}
+\author{Kai Hu, Siwei Sun, Yosuke Todo, Meiqin Wang,  Qingju Wang}
+\institute[HUST]{ASIACRYPT 2021}
+
+% -------------------------------------------------------------
+\usetheme{Boadilla}
+\usefonttheme[onlymath]{serif}
+\begin{document}
+
+%% title frame
+\begin{frame}
+    \titlepage
+\end{frame}
+
+%% normal frame
+\section{ Introduction}
+%\subsection{}
+\begin{frame}
+    \frametitle{Introduction}
+    %At EUROCRYPT 2009 Dinur and Shamir   proposed  cube attack against symmetric-key primitives with a secret key and a public input.   
+    \begin{itemize}
+        \item At EUROCRYPT 2009 Dinur and Shamir   proposed  cube attack
+        \item At CRYPT 2017 the conventional bit-based division property was first introduced to probe the structure of the superpoly
+        \item At EUROCRYPT 2020 Hao et al. proposed the three-subset division property without unknown subsets
+    \end{itemize}
+    \begin{block}{Contribution  }
+        \begin{itemize}
+         \item Propose a new framework with nested monomial predictions which scales well for massive superpoly recovery.\\
+         \item With help of the Möbius transformation, we present a novel key-recovery technique based on superpolies involving all key bits exploiting the disjoint properties
+        \end{itemize}
+    \end{block}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Preliminaries}
+
+    \begin{block}{Boolean Function }
+        Let $f: \mathbb{F}^n_2 \rightarrow \mathbb{F}_2$ be a Boolean function whose algebraic normal form (ANF) is 
+        $$f(\boldsymbol{x})=f(x_0,x_1,...,x_{n-1})=\bigoplus_{\boldsymbol{u}\in \mathbb{F}_2^n}a_{\boldsymbol{u}} \prod^{n-1}_{i=0}x_i^{u_i}$$
+        where $a_\boldsymbol{u}\in \mathbb{F}_2$ and
+        $$
+        \boldsymbol{x}^{\boldsymbol{u}}=\pi_{\boldsymbol{u}}(\boldsymbol{x})=\prod^{n-1}_{i=0}x_i^{u_i}= \left\{\begin{matrix}x_i,if \quad u_i=1,\\1,if \quad u_i=0, \end{matrix}\right.    
+        $$
+
+    \end{block}
+    \begin{example }{Example 1}
+        Let $f(x_0,x_1) =x_0x_1 \oplus x_0 \oplus 1$ ,then we have  \centering $x_0x_1 \rightarrow f ,x_0 \rightarrow f,1 \rightarrow f ,x_1 \not \rightarrow f$ 
+    \end{example }
+
+\end{frame} 
+
+\begin{frame}
+    %\frametitle{An Example}
+
+    
+    \begin{block}{Vectorial Boolean Function }
+        $\boldsymbol{f}:\mathbb{F}^m_2 \rightarrow \mathbb{F}^n_2 $  be a vectorial Boolean function with $\boldsymbol{y} =(y_0,y_1,...,y_{m-1})=\boldsymbol{f}(\boldsymbol{x})=(f_0(\boldsymbol{x}),...,f_{n-1}(\boldsymbol{x}))$ .
+        For $\boldsymbol{x}\in \mathbb{F}^n_2 $,we use $\boldsymbol{y}^\boldsymbol{v}$ to denote the product of some coordinates of $\boldsymbol{y}$:
+        $$ \boldsymbol{y}^v =\prod^{m-1}_{i=0}y_i^{v_i} =\prod ^{m-1}_{i=0}(f_i(\boldsymbol{x}))^{v_i}$$
+    \end{block}
+    
+
+    
+\end{frame}
+\begin{frame}
+    \frametitle{ Monomial Prediction}
+    Let $\boldsymbol{f}:\mathbb{F}^{n_0}_2 \rightarrow \mathbb{F}^{n_r}_2$ be a composite vectorial Boolean function of a sequence of
+    r smaller function $\boldsymbol{f}^i:\mathbb{F}^{n_i}_2 \rightarrow \mathbb{F}^{n_{i+1}}_2,0 \le i \le r-1$ as
+    \begin{align}
+        \boldsymbol{f}=\boldsymbol{f}^{(r-1)} \circ \boldsymbol{f}^{(r-2)} \circ \dots \circ \boldsymbol{f}^{(0)}
+    \end{align}
+    \begin{block}{Definition 1 (Monomial Trail)}
+        Let $\bd{x}^{(i+1)}=\bd{f}^{(i)}(\bd{x}^{(i)})$ for $0\le i<r$.We call a sequence of monomails 
+        $(\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) , \pi_{\boldsymbol{u}^{(1)}}(\boldsymbol{x}^{(1)}) , \dots ,\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)}))$
+        an r-round monomial trail connecting $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})$ and
+        $\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$ with respect to the composite function
+        $\bd{f}=\bd{f}^{(r-1)}\circ \bd{f}^{(r-2)}\circ \dots \circ \bd{f}^{(0)}$ if
+        $$
+        \pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \rightarrow \pi_{\boldsymbol{u}^{(1)}}(\boldsymbol{x}^{(1)}) \rightarrow \dots \rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})
+        $$
+        \\
+        If there is at least one monomial trail connecting $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})$
+        and $\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,we write 
+        $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$.
+        Otherwise,$\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\not \leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \begin{block}{Example 2}
+        Let $\boldsymbol{z}=(z_0,z_1)=\boldsymbol{f}^{(0)}(y_0,y_1)=(y_0y_1,y_0 \oplus y_1),\boldsymbol{y}=(y_0,y_1)=
+        \boldsymbol{f}^{(0)}(x_0,x_1,x_2)=(x_0\oplus x_1 \oplus x_2 ,x_0x_1 \oplus x_0 \oplus x_2)$ and 
+        $ \boldsymbol{f}=\boldsymbol{f}^{(0)} \cric \boldsymbol{f}^{(1)}$.
+        \\
+
+
+            
+        $\boldsymbol{y}$
+        $$
+            (y_0,y_1)^{(0,0)}=1,(y_0,y_1)^{(1,0)}=y_0=\underline{x_0}\oplus x_1\oplus x_2,(y_0,y_1)^{(0,1)}=y_1=x_0x_1\oplus 
+             \underline{x_0} \\ 
+              \oplus x_2,\\
+            (y_0,y_1)^{(1,1)}=y_0y_1=x_0x_1x_2 \oplus x_0x_1\oplus x_1x_2 \oplus \underline{x_0} \oplus x_2.
+        $$
+        \\Then $$ x_0 \rightarrow y_0,x_0\rightarrow y_1,x_0 \rightarrow y_0y_1$$
+        \\Similarly $$ (z_0,z_1)^{(0,0)}=1,(z_0,z_1)^{(1,0)}=z_0=y_0y_1,(z_0,z_1)^{(0,1)}=z_1=y_0\oplus y_1,
+         \\(z_0,z_1)^{(1,1)}=z_0z_1=0$$
+
+         Then connecting $ x_0$ and monomials of z:$$ x_0 \rightarrow y_0 \rightarrow z_1,x_0 \rightarrow y_1 \rightarrow z_1,x_0 \rightarrow y_0y_1 \rightarrow z_0$$
+
+    \end{block}
+\end{frame}
+\begin{frame}
+    
+    \begin{block}{Lemma 1}
+        $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$.
+        if $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,and thus
+        $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\not \leadsto \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+        implies $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\not \rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+    \end{block}
+    Considering Example 2, although $x_0  \leadsto z_1$,we have $x_0 \not \rightarrow z_1$ since 
+    $$
+    z_1=y_0 \oplus y_1 =\underline{x_0} \oplus x_1\oplus x_2\oplus x_0x_1 \oplus \underline{x_0} \oplus x_2=x_0x_1\oplus x_1.
+    $$
+    \begin{block}{Definition 2 (Monomial Hull)}
+        For $\bd{f}$ with a  specific composition sequence,
+        the monomial hull of $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})$ and $\pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,
+        denoted by $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \bowtie \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$,is the set of
+        all monomial trails connecting them. The number of trails in the
+        monomial hull is called the \textbf{size} of the hull and is denoted by
+        $|\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \bowtie \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})|$.
+
+
+    \end{block}
+\end{frame}
+\begin{frame}
+    \begin{block}{Example 3}
+        Consider Example 2, the monomial hull of $x_0$ and $z_1$ is the set 
+        $$
+        x_0 \bowtie z_1=\{x_0 \rightarrow y_0 \rightarrow z_1,x_0 \rightarrow y_1 \rightarrow z_1\}
+        $$
+        Thus  the size of $x_0 \bowtie z_1$ is 2.Furthermore, since $x_0 \not \leadsto z_0z_1$,
+        $x_0 \bowtie z_0z_1 =\emptyset $ and $|x_0 \bowtie z_0z_1|=0$.
+    \end{block}
+    \begin{block}{Theorem 1}
+        Let $\boldsymbol{f}=\boldsymbol{f}^{(r-1)} \circ \boldsymbol{f}^{(r-2)} \circ \dots \circ \boldsymbol{f}^{(0)}$ defined as
+        above. $\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)}) \rightarrow \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)})$
+        if and only if 
+        $$
+        |\pi_{\boldsymbol{u}^{(0)}}(\boldsymbol{x}^{(0)})\bowtie  \pi_{\boldsymbol{u}^{(r)}}(\boldsymbol{x}^{(r)}) \equiv 1 \pmod{2}.
+        $$
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Cube Attack}
+    For a cipher with a secret key $k \in  \mathbb{F}^m_2$ and a public input $x \in \mathbb{F}^n_2$, a Boolean function $f(x,k)$
+        $$
+        f(\boldsymbol{x},\boldsymbol{k})=p(\boldsymbol{x}[\hat{\boldsymbol{u}}],\boldsymbol{k}) \cdot \boldsymbol{x}^{\boldsymbol{u}}
+        +q(\boldsymbol{x},\boldsymbol{k})
+        $$
+        Let $\mathbb{C} ={\boldsymbol{x} \in \mathbb{F}^n_2:\boldsymbol{x}} \preceq \boldsymbol{u}$  
+        $$
+        \bigoplus_{\boldsymbol{x} \in \mathbb{C}_u}f(\boldsymbol{x},\boldsymbol{k})=\bigoplus_{\boldsymbol{x}\in \mathbb{C}_u}(p \cdot \boldsymbol{x}^{\boldsymbol{u}}+q(\boldsymbol{x},\boldsymbol{k}))=p
+        $$
+        
+        \\It is easy to check that the superpoly of $\mathbb{C}_u$ is just the coeffcient of $\boldsymbol{x}^{\boldsymbol{u}}$ in the
+        parameterized Boolean function $f(\boldsymbol{x},\bd{k}) $
+        $$
+        p(\boldsymbol{x}[\hat{\boldsymbol{u}}],\boldsymbol{k})=Coe(f(\bd{x},\bd{k}),\bd{x}^{\bd{u}}).
+        $$
+
+\end{frame}
+
+\section{ Superpoly Recovery with Nested Monomial Predictions}
+\begin{frame}
+    \frametitle{ The Nested Framework}
+
+    Given a parameterized Boolean function which consists of a sequence of simple
+vectorial Boolean functions as
+    $$
+    \boldsymbol{f}=\boldsymbol{f}^{(r-1)} \circ \boldsymbol{f}^{(r-2)} \circ \dots \circ \boldsymbol{f}^{(0)}
+    $$
+    
+    $$
+        f(\bd{x},\bd{k})=\bigoplus_{\bd{t} \in \mathbb{F}^n_2 , \pi_{\bd{t}}(r-r_0)(\bd{s}^{(r-r_0)})\in \mathbb{S}^{(r-r_0)}} 
+        \pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)})
+    $$
+    where $\mathbb{S}^{(r-r_0)}=\{\pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)}):\pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)}) \rightarrow f\}$
+    \begin{block}{Compute Coe$( \pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)}),\bd{x}^{\bd{u}})}
+            $\bd{s}^{(r-r_0)}$        is the
+output vector of a new composite vectorial Boolean function as
+
+        $$ 
+        \bd{s}^{(r-r_0)}=\bd{f}^{(r-r_0-1)}\circ \bd{f}^{(r-r_0-2)} \cric \dots \cric \bd{f}^{(0)}
+        $$
+        then $\pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)})$ is a polynomial of (\bd{x},\bd{k})
+    \end{block}
+\end{frame}
+
+
+\begin{frame}
+    %\frametitle{How can we improve the diagnosis}
+    Hence we can construct the MILP model to enumerate all feasible trails representing
+    $\bd{k}^{\bd{v}}\bd{x}^{\bd{u}}\leadsto \pi_{\bd{t}(r-r_0)}(\bd{s}^{(r-r_0)})$
+    \\ set a time limit $\tau^{(r-r_0)}$ for thr MILP model.We use 
+    $$
+    \mathcal{M}.TimeLimit \leftarrow \tau^{(r-r_0)}
+    $$ 
+    For each element in $\mathbb{S}^{(r-r_0)}$,the model of enumerating the trails will end up with three different kinds of status
+    \begin{enumerate}
+        \item The model is solved and infeasible, then Coe$(\pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)}) )$
+        \item The model is solved and feasible, and all the solutions has been enumerated,then 
+        Coe$(\pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)}) )$ are obtained
+        \item The model is not solved in the time limit $\tau^{(r-r_0)}$
+    \end{enumerate}
+    
+        $$\mathbb{S}^{(r-r_0)}=\mathbb{S}_0^{(r-r_0)} \bigcup  \mathbb{S}_0^{(r-r_0)}_p \bigcup \mathbb{S}_0^{(r-r_0)}_u$$
+        \begin{itemize}
+            \item $\mathbb{S}_0^{(r-r_0)}_0$ is called a solved-0 set ,case 1
+            \item $\mathbb{S}_0^{(r-r_0)}_p$ is called a solved-p set ,case 2
+            \item $\mathbb{S}_0^{(r-r_0)}_u$ is called a undecided set ,case 3
+        \end{itemize}
+    
+\end{frame}
+
+
+\begin{frame}
+    %\begin{tikzpicture}[remember picture,overlay]  
+        %\node<1->[xshift=0cm,yshift=0cm] at (current page.center) {
+            \includegraphics[scale=0.3]{1.png}
+    %\end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+    \includegraphics[scale=0.3]{2.png}
+    \\The solved-0 set is discarded naturally since the elements in it have no contribution to
+    Coe$(f,\bd{x}^{\bd{u}} )$. \\
+    For the solved-p set , 
+    $$
+    p^{(r-r_0)}=\bigoplus_{\pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)}) \in \mathbb{S}_p^{(r-r_0)} }
+    Coe(\pi _{\bd{t}}^{(r-r_0)}(\bd{s}^{(r-r_0)}) )
+    $$
+    
+\end{frame}
+\subsection{Key-Recovery}
+\begin{frame}
+    \frametitle{Key-Recovery Attacks Exploiting Massive Superpolies}
+    \begin{block}{offline}
+        We have recovered the exact ANF of superpoly $p(\bd{f})$ for the cube term $\bd{x}^{\bd{u}}$ (the 
+        corresponding cube is denoted by $\mathbb{C}_{\bd{u}}$).
+    \end{block}
+    \begin{block}{online}
+        In the online phase, we first call the cipher oracle to encrypt all elements in the cube and get the value of
+        the superpoly with time complexity $2^{wt(\bd{u})}$.\\
+        Next,we try to obtain some information of the secret key from the equation:
+        $$
+        p(\bd{k})=\bigoplus _{\bd{x}\in \mathbb{C}_{\bd{u}}} f_{\bd{k}}(\bd{x}).
+        $$
+        
+    \end{block}
+\end{frame}
+\begin{frame}
+    It is well known that Möbius transformation is available for the conversion 
+    between the ANF and the truth table of any Boolean function.
+    \begin{algorithm}[H]
+        \caption{Möbius transformation }
+        \begin{algorithmic}[1]
+            \Procedure {MöbiusTransformation}{$(a[i],0\le i\le 2^n):$}
+            \For{$k=1$ to $n$}
+            \For{$i=0$ to $2^{n-k}$}
+            \For{$j=0$ to $2^{k-1}-1$}
+            \State $a[2^ki+2^{k-1}+j]=a[2^ki+j]\oplus a[2^ki+2^{k-1}+j]$ 
+
+        \Return{$a$}
+        \end{algorithmic}
+    \end{algorithm}
+    It requires {\color{red}$n \times 2^{n-1}$} 1-bit XORs and {\color{red}$2^n-bit$} memory complexity.\\
+    Considering the sparse property,the efficient algorithm, the Möbius transformation
+    costs only  {\color{red}$n \times 2^{n-2}$} XORs for the superpolies we consider in this paper
+        
+\end{frame}
+\begin{frame}
+    \frametitle{Divide-and-Conquer Method Using the Disjoint Set}
+    \begin{block}{Definition 1 (Disjoint set)}
+        Given a superpoly $p(\bd{k})$ with n variables, if for $ 0\le i \not =j<n$,$k_i$ and $k_j$ are never multiplied mutually in all monomials
+        of $p(\bd{k})$, then we say $k_i$ and $k_j$ are disjoint. If for a subset of variables $D\subseteq \{k_0,k_1,...,k_{n-1}\}$, 
+        every pair of variables like $k_i,k_j \in D$ are all disjoint,we call D a disjoint set.
+    \end{block}
+    Search for a disjoint set of $p(\bd{k})$
+        A matrix $M \in \mathbb{F}^n_2$ is called the disjoint matrix of $p(\bd{k})$,if $M[i][j]=0$ when $k_i,k_j$ are disjoint
+        ,$M[i][j]=1$ otherwise.
+        %Given the disjoint matrix, a locally-optimized disjoint set can be obtained by a greedy algorithm as follows,
+        \begin{enumerate}
+            \item sort the variables in $\{k_0,k_1,...,k_{n-1}\}$ in certain order,an increasing
+            order according to the value $\sum_{0 \le j <n}M[i][j]$ for $k_i$.The sorted variables are
+            denoted as$\{k_0^{\prime},k_1^{\prime},...,k_{n-1}^{\prime}\}$;
+            \item initialize a set $D=\{k_0^{\prime}\}$
+            \item for $1 \le i<n$,if $k_i^{\prime}$ is disjoint with all variables in D,put $k_i^{\prime}$ into D;
+            otherwise,process the next variable
+            \item after all the variables are processed,D is one of the disjoint sets.
+        \end{enumerate}
+    
+\end{frame}
+\begin{frame}
+    
+    \begin{block}{Key recovery attacks with single balanced superpoly}
+        If the balanced superpoly $p(\bd{k})$ has a disjoint set $D$ with m variables and $J=\{k_0,k_1,...,k_{n-1}\}/D$,
+        then $p(\bd{k})$ can be written as the form 
+        $$
+        p(k_0,k_1,...,k_{n-1})=\left(\bigoplus _{0\le i<m} k_i \cdot p_i(J)\right) \oplus p_m(J)
+        $$
+
+    \end{block}
+    \textbf {Complexity}\\
+    Every $p_i(J)$ involves at most n-m variables, Möbius
+    transform to compute the truth tables of $p_0,p_1,...,p_m$ over all possible values of variables in J
+    \\ For the linear equation, we can remove 1-bit key
+    guessing efficiently after guessing m − 1 key bits additionally\\
+    \centering {\color{red}$(m+1)\times (n-m) \times 2^{n-m-2}$} XORs to construct the truth tables\\
+    \centering {\color{red}$2^{(m-1)}$} guesses for the values of any m −1 variables in the linear equations
+\end{frame}
+\begin{frame}
+    \
+\begin{block}{Key recovery attacks with multiple balanced superpolies}
+    Suppose we have recovered N balanced superpolies $p^{(0)},p^{(1)},...,p^{(N-1)}$,we call $D$ their common disjoint set    
+    \\The complexity of the case then consists of
+\end{block}
+\begin{enumerate}
+    \item constructing the truth tables, which costs {\color{red}$N \times (m+1) \times (n-m) \times 2^{n-m-2}$} XORs;
+    \item constructing the linear equations, which is {\color{red}$N\times 2^{n-m} \times (m+1)$} truth table lookuos;
+    \item guessing the value of $m-N$(we always let $m>N$) cariables,then the remaining N variables can be determined by 
+     solving a set of simple linear equations.This step costs {\color{red}$2^{n-m}\times x^{m-N}$} guesses.
+\end{enumerate}
+
+\end{frame}
+
+\end{document}
